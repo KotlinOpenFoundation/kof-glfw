@@ -1,0 +1,27 @@
+services:
+
+  linux-build:
+    build: .
+    command: bash -c "cmake -S . -B build -D BUILD_SHARED_LIBS=ON -D CMAKE_BUILD_TYPE=Release -D GLFW_BUILD_EXAMPLES=OFF -D GLFW_BUILD_TESTS=OFF -D GLFW_BUILD_DOCS=OFF && cmake --build build -j 4"
+    volumes:
+      - .:/app
+      - gradle-cache:/root/.gradle
+      - konan-cache:/root/.konan
+      - build-cache:/app/.gradle
+    working_dir: /app/kof-glfw-interop/build/lib/glfw/src
+    privileged: true
+
+  linux-gradle:
+    build: .
+    command: ./gradlew build
+    volumes:
+      - .:/app
+      - gradle-cache:/root/.gradle
+      - konan-cache:/root/.konan
+      - build-cache:/app/.gradle
+    privileged: true
+
+volumes:
+  gradle-cache:
+  konan-cache:
+  build-cache:

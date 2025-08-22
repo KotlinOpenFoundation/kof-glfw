@@ -1,0 +1,39 @@
+name: 'Setup Linux'
+description: 'Install dependencies and set up cross-compilation on Linux'
+runs:
+  using: "composite"
+  steps:
+    - name: Install Dependencies
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential git cmake pkg-config gcc-multilib \
+          libwayland-dev \
+          xorg-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libxext-dev libxkbcommon-dev \
+          libgl1-mesa-dev mesa-utils xvfb
+
+    - name: Set Up Cross-Compilation
+      shell: bash
+      run: |
+        sudo dpkg --add-architecture arm64
+        # Pin all existing sources to amd64 so apt-get update doesn't fail fetching arm64 from repos that don't support it
+        # Handle traditional .list files
+        for f in /etc/apt/sources.list /etc/apt/sources.list.d/*.list; do
+          [ -f "$f" ] || continue
+          # Lines without brackets: add [arch=amd64]
+          sudo sed -i '/\[/!s/^deb http/deb [arch=amd64] http/' "$f"
+          # Lines with brackets but no arch=: insert arch=amd64
+          sudo sed -i '/arch=/!s/^deb \[/deb [arch=amd64,/' "$f"
+        done
+        # Handle deb822 format .sources files (Ubuntu 24.04+)
+        for f in /etc/apt/sources.list.d/*.sources; do
+          [ -f "$f" ] || continue
+          if ! grep -q '^Architectures:' "$f"; then
+            sudo sed -i '/^Types:/a Architectures: amd64' "$f"
+          fi
+        done
+        # Add arm64 source from ports mirror
+        echo "deb [arch=arm64] https://ports.ubuntu.com/ubuntu-ports $(lsb_release -cs) main restricted universe multiverse" | sudo tee /etc/apt/sources.list.d/arm64.list
+        echo "deb [arch=arm64] https://ports.ubuntu.com/ubuntu-ports $(lsb_release -cs)-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list.d/arm64.list
+        sudo apt-get update
+        sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libx11-dev:arm64

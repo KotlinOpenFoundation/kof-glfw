@@ -1,0 +1,35 @@
+name: 'Setup Windows'
+description: 'Install and set up Mesa for Windows'
+inputs:
+  mesa-version:
+    description: 'Mesa version'
+    required: true
+  mesa-opengl-dir:
+    description: 'Directory to install Mesa'
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Create Mesa directory
+      shell: bash
+      run: mkdir -p "${{ inputs.mesa-opengl-dir }}"
+
+    - name: Install Mesa
+      uses: f3d-app/install-mesa-windows-action@v1
+      with:
+        path: ${{ inputs.mesa-opengl-dir }}
+        version: ${{ inputs.mesa-version }}
+
+    - name: Compile test binary
+      shell: bash
+      run: ./gradlew linkDebugTestMingwX64
+
+    - name: Copy Mesa DLLs to test binary dir
+      shell: pwsh
+      run: |
+        # Mesa opengl32.dll must be in the same directory as the test executable
+        # so it takes precedence over the system opengl32.dll in DLL search order
+        $testBinDir = "${{ github.workspace }}/kof-glfw-interop/build/bin/mingwX64/debugTest"
+        Copy-Item -Path (Join-Path "${{ inputs.mesa-opengl-dir }}" "*.dll") -Destination "$testBinDir" -Force
+        Write-Host "Copied Mesa DLLs to '$testBinDir'"
+        Get-ChildItem "$testBinDir" -Filter "*.dll" | ForEach-Object { Write-Host "  $_" }

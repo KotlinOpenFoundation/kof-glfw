@@ -1,0 +1,30 @@
+name: 'Setup macOS'
+description: 'Build and set up custom GLFW for macOS'
+inputs:
+  glfw-version:
+    description: 'GLFW version'
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Build GLFW from source
+      shell: bash
+      run: |
+        curl -sL https://github.com/glfw/glfw/archive/refs/tags/${{ inputs.glfw-version }}.tar.gz | tar xz -C /tmp
+        mv /tmp/glfw-${{ inputs.glfw-version }} /tmp/glfw-src
+        patch -p1 -d /tmp/glfw-src < ${{ github.workspace }}/.github/patches/glfw-remove-forced-acceleration.patch
+        cmake -S /tmp/glfw-src -B /tmp/glfw-build \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DBUILD_SHARED_LIBS=ON \
+          -DGLFW_BUILD_EXAMPLES=OFF \
+          -DGLFW_BUILD_TESTS=OFF \
+          -DGLFW_BUILD_DOCS=OFF
+        cmake --build /tmp/glfw-build -j $(sysctl -n hw.ncpu)
+
+    - name: Override pre-built GLFW with custom build
+      shell: bash
+      run: |
+        ./gradlew extractGlfwLibMacos createGlfwDylibSymlinks
+        ARCH=$(uname -m)
+        if [ "$ARCH" = "arm64" ]; then LIB_DIR="lib-arm64"; else LIB_DIR="lib-x86_64"; fi
+        cp /tmp/glfw-build/src/libglfw.3.dylib kof-glfw-interop/build/deps/glfw/macos/$LIB_DIR/libglfw.3.dylib

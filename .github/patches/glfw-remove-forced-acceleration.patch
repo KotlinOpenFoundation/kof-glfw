@@ -1,0 +1,10 @@
+--- a/src/nsgl_context.m
++++ b/src/nsgl_context.m
+@@ -204,7 +204,6 @@
+     NSOpenGLPixelFormatAttribute attribs[40];
+     int index = 0;
+
+-    ADD_ATTRIB(NSOpenGLPFAAccelerated);
+     ADD_ATTRIB(NSOpenGLPFAClosestPolicy);
+
+     if (ctxconfig->nsgl.offline)

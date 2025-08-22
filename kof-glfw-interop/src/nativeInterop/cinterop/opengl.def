@@ -1,0 +1,39 @@
+package = platform.opengl
+
+linkerOpts = -lGL
+
+---
+
+typedef unsigned int GLenum;
+typedef unsigned int GLbitfield;
+typedef int GLint;
+typedef int GLsizei;
+typedef float GLfloat;
+typedef float GLclampf;
+typedef void GLvoid;
+
+#define GL_TRUE 1
+#define GL_FALSE 0
+#define GL_COLOR_BUFFER_BIT 0x00004000
+#define GL_TRIANGLES 0x0004
+#define GL_UNSIGNED_BYTE 0x1401
+#define GL_RGB 0x1907
+#define GL_FLOAT 0x1406
+#define GL_INFO_LOG_LENGTH 0x8B84
+#define GL_COMPILE_STATUS 0x8B81
+#define GL_LINK_STATUS 0x8B82
+#define GL_VERTEX_SHADER 0x8B31
+#define GL_FRAGMENT_SHADER 0x8B30
+
+void* glXGetProcAddress(const char*);
+
+void glViewport(GLint x, GLint y, GLsizei width, GLsizei height);
+void glClearColor(GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha);
+void glClear(GLbitfield mask);
+void glBegin(GLenum mode);
+void glEnd(void);
+void glVertex2f(GLfloat x, GLfloat y);
+void glColor3f(GLfloat red, GLfloat green, GLfloat blue);
+void glFinish(void);
+void glReadPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, GLvoid *pixels);
+void glDrawArrays(GLenum mode, GLint first, GLsizei count);

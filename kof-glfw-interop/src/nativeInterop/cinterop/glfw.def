@@ -1,0 +1,15 @@
+package = io.github.kotlinopenfoundation.glfw.cinterop
+
+headers = GLFW/glfw3.h
+
+compilerOpts.mingw = -Ibuild/deps/glfw/mingw/include -DGLFW_INCLUDE_NONE
+linkerOpts.mingw = -lglfw3dll -lgdi32
+
+compilerOpts.macos_x64 = -Ibuild/deps/glfw/macos/include -DGLFW_INCLUDE_NONE
+compilerOpts.macos_arm64 = -Ibuild/deps/glfw/macos/include -DGLFW_INCLUDE_NONE
+linkerOpts.macos_x64 = -lglfw -framework Cocoa -framework OpenGL -framework IOKit -ldl
+linkerOpts.macos_arm64 = -lglfw -framework Cocoa -framework OpenGL -framework IOKit -ldl
+
+compilerOpts.linux = -isystem /usr/include -Ibuild/deps/glfw/src/include -DGLFW_INCLUDE_NONE
+linkerOpts.linux_x64 = -lglfw -L/usr/lib/x86_64-linux-gnu -lX11 -lXrandr -lXinerama -lXcursor -lXi -lpthread -ldl -lm -lrt -lwayland-client -lwayland-cursor -lwayland-egl -lxkbcommon --allow-shlib-undefined --unresolved-symbols=ignore-all --warn-unresolved-symbols
+linkerOpts.linux_arm64 = -lglfw -lX11 -lXrandr -lXinerama -lXcursor -lXi -lpthread -ldl -lm -lrt -lwayland-client -lwayland-cursor -lwayland-egl -lxkbcommon --allow-shlib-undefined --unresolved-symbols=ignore-all --warn-unresolved-symbols

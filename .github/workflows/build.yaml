@@ -1,0 +1,126 @@
+name: Build
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+#  release:
+#    types: [ created ]
+
+env:
+  JDK_VERSION: 25
+  GLFW_VERSION: "3.4"
+  MESA_VERSION: 24.0.1
+  MESA_OPENGL_DIR: ${{ github.workspace }}\mesa
+
+jobs:
+
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ windows-latest, ubuntu-latest, macos-latest ]
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+
+      - name: Checkout sources
+        uses: actions/checkout@v6
+
+      - name: Gradle Wrapper Validation
+        uses: gradle/actions/wrapper-validation@v5
+
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          java-version: '${{ env.JDK_VERSION }}'
+          distribution: 'temurin'
+          cache: 'gradle'
+          server-id: GitHubPackages
+          settings-path: ${{ github.workspace }}
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Setup Linux
+        if: runner.os == 'Linux'
+        uses: ./.github/actions/setup-linux
+
+      - name: Setup macOS
+        if: runner.os == 'macOS'
+        uses: ./.github/actions/setup-macos
+        with:
+          glfw-version: ${{ env.GLFW_VERSION }}
+
+      - name: Setup Windows
+        if: runner.os == 'Windows'
+        uses: ./.github/actions/setup-windows
+        with:
+          mesa-version: ${{ env.MESA_VERSION }}
+          mesa-opengl-dir: ${{ env.MESA_OPENGL_DIR }}
+
+      - name: Start virtual framebuffer (Linux)
+        if: runner.os == 'Linux'
+        run: Xvfb :99 -screen 0 1920x1080x24 > /dev/null 2>&1 &
+
+      - name: Test
+        run: ./gradlew build --scan
+        env:
+          DISPLAY: :99
+          GALLIUM_DRIVER: llvmpipe
+          LIBGL_ALWAYS_SOFTWARE: 1
+          MESA_GL_VERSION_OVERRIDE: "4.5"
+          MESA_GLSL_VERSION_OVERRIDE: "450"
+
+      - name: Test Report
+        uses: dorny/test-reporter@v2
+        if: ${{ !cancelled() }}
+        with:
+          name: Tests (${{ matrix.os }})
+          reporter: java-junit
+          path: '**/build/test-results/**/TEST-*.xml'
+          fail-on-empty: false
+
+      - name: Upload test results
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.os }}
+          if-no-files-found: ignore
+          retention-days: 7
+          path: |
+            **/build/test-results/**/*.xml
+            **/build/reports/tests/**
+
+#      - name: Publish to GitHub Packages
+#        run: ./gradlew publish
+#        env:
+#          USERNAME: ${{ github.actor }}
+#          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  dependency-submission:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+
+      - name: Checkout sources
+        uses: actions/checkout@v6
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: ${{ env.JDK_VERSION }}
+          cache: 'gradle'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Generate and submit dependency graph
+        uses: gradle/actions/dependency-submission@v5
