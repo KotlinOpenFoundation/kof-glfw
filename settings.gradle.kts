@@ -29,7 +29,7 @@ rootProject.name = "kof-glfw"
 
 include(
   ":kof-glfw-interop",
-//  ":kof-glfw-wrapper",
+  ":kof-glfw-wrapper",
 //  ":kof-glfw"
 )
 

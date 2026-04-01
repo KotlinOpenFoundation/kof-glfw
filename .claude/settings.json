@@ -8,21 +8,30 @@
   "permissions": {
     "allow": [
       "Read(.)",
-      "Bash(find . *)",
-      "Bash(./gradlew:*)",
-      "Bash(docker compose:*)",
-      "Bash(git log:*)",
-      "Bash(git diff:*)",
-      "Bash(git show:*)",
-      "Bash(git blame:*)",
+      "Bash(ls *)",
+      "Bash(cat *)",
+      "Bash(grep *)",
+      "Bash(find *)",
+      "Bash(./gradlew *)",
+      "Bash(docker compose *)",
+      "Bash(git log)",
+      "Bash(git log *)",
+      "Bash(git diff)",
+      "Bash(git diff *)",
+      "Bash(git show *)",
+      "Bash(git blame *)",
       "Bash(rm -rf .gradle/configuration-cache)",
-      "mcp__ide"
+      "WebSearch",
+      "WebFetch(domain:www.glfw.org)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:github.com)",
+      "mcp__ide",
+      "mcp__idea"
     ],
     "deny": [
       "Write(.claude/)",
       "Write(.git/)",
-      "Write(.idea/)",
-      "Bash(git:*)"
+      "Write(.idea/)"
     ]
   }
 }
