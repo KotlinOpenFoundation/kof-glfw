@@ -39,7 +39,6 @@ jobs:
         with:
           java-version: '${{ env.JDK_VERSION }}'
           distribution: 'temurin'
-          cache: 'gradle'
           server-id: GitHubPackages
           settings-path: ${{ github.workspace }}
 
@@ -117,10 +116,10 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: ${{ env.JDK_VERSION }}
-          cache: 'gradle'
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
       - name: Generate and submit dependency graph
         uses: gradle/actions/dependency-submission@v5
+        continue-on-error: true
